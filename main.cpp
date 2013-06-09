@@ -1,5 +1,9 @@
 #include "Vector3.h"
 #include "Ray.h"
+#include "ppm.h"
+#include "Object.h"
+#include "Bound.h"
+#include "Material.h"
 
 
 int main()
