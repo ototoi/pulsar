@@ -61,6 +61,14 @@ namespace pulsar{
 		
 			return *this;
 		}
+
+
+		this_type& negate(){
+			e_[0] *= -1;
+			e_[1] *= -1;
+			e_[2] *= -1;
+			return *this;
+		}
 		
 		float sqr_length()const{
 			return e_[0]*e_[0]+e_[1]*e_[1]+e_[2]*e_[2];
@@ -109,6 +117,15 @@ namespace pulsar{
 		return Vector3(rhs) /= lhs ; 
 	}
 	
+	inline Vector3 operator+(const Vector3 & rhs){ 
+		return rhs; 
+	}
+
+	inline Vector3 operator-(const Vector3 & rhs){ 
+		return Vector3(rhs).negate(); 
+	}
+
+
 	inline float sqr_length(const Vector3 &rhs){
 		return rhs.sqr_length();
 	}

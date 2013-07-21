@@ -1,11 +1,28 @@
 #include "SphereObject.h"
+#include <cmath>
 
 
 namespace pulsar{
 	
 	bool SphereObject::intersect(Intersection* info, const Ray& r, float tmin, float tmax)const
 	{
+		Vector3 rs = r.org() - c_;
+
+		float B = dot(rs, r.dir());
+		float C = dot(rs, rs) - rad_ * rad_;
+		float D = B * B - C;
 		
+		if (D > 0.0) {
+			float t = -B - sqrt(D);
+	        
+			if ((t > tmin) && (t < tmax)) {
+				info->t = t;
+				info->position = r.org() + t*r.dir();
+				info->normal  = normalize(info->position-c_);
+				info->pObject = this;
+				return true;
+			}
+		}
 		return false;
 	}
 	

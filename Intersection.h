@@ -14,8 +14,8 @@ namespace pulsar{
 		Vector3 position;	//world position
 		Vector3 normal;		//world normal
 		Vector3 tex;		//
-		Object* pIntersection;//
-		Material*     pMaterial;	//
+		const Object* pObject;//
+		const Material*     pMaterial;	//
 	};
 	
 }

@@ -15,7 +15,6 @@ namespace pulsar{
 		float rad_;
 	};
 	
-	
 }
 
 #endif

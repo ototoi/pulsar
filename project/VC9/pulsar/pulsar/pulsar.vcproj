@@ -171,11 +171,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\pulsar.cpp"
+				RelativePath="..\..\..\..\CompositeObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.cpp"
+				RelativePath="..\..\..\..\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\MeshObject.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\PlaneObject.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\PLQBVHMeshAccelerator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\SphereObject.cpp"
 				>
 			</File>
 		</Filter>
@@ -185,11 +201,55 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\stdafx.h"
+				RelativePath="..\..\..\..\Bound.h"
 				>
 			</File>
 			<File
-				RelativePath=".\targetver.h"
+				RelativePath="..\..\..\..\CompositeObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Intersection.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Material.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\MeshObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\PlaneObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\PLQBVHMeshAccelerator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\ppm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Ray.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\SphereObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Triangle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Vector3.h"
 				>
 			</File>
 		</Filter>
@@ -199,6 +259,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath="..\..\..\..\README.md"
+			>
+		</File>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>
