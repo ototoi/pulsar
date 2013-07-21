@@ -1,8 +1,10 @@
-#ifndef __PULSAR_VECTOR3_H__
-#define __PULSAR_VECTOR3_H__
+#ifndef __PULSAR_Vector3_H__
+#define __PULSAR_Vector3_H__
 
 #include <cmath>
 #include <cstring>
+#include <iostream>
+#include <sstream>
 
 namespace pulsar{
 	
@@ -156,6 +158,21 @@ namespace pulsar{
 	
 	inline bool operator!=(const Vector3 &lhs, const Vector3 &rhs){
 		return !(lhs == rhs);
+	}
+
+	template<typename CharT, class Traits>
+	std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, const Vector3& rhs){
+	    static const int Sz = 3;
+		std::basic_ostringstream<CharT, Traits> s;
+		s.flags(os.flags());
+		s.imbue(os.getloc());
+		s.precision(os.precision());
+		s << "(";
+		for(std::size_t i = 0; i < Sz-1; ++i){
+			s << rhs[i] <<",";
+		}
+		s <<rhs[Sz-1] <<")";
+		return os << s.str();
 	}
 	
 }

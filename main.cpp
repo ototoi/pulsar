@@ -7,7 +7,11 @@
 #include "SphereObject.h"
 #include "PlaneObject.h"
 #include "CompositeObject.h"
+#include "PLYMeshLoader.h"
+#include "MeshObject.h"
+#include "Bound.h"
 #include <memory>
+#include <iostream>
 
 using namespace pulsar;
 
@@ -43,16 +47,26 @@ spheres[0].center.x = -2.0;
 void initScene()
 {
 	CompositeObject* comp = new CompositeObject();
+	/*
 	comp->add(new SphereObject(Vector3(-2.0,0.0,-3.5), 0.5));
 	comp->add(new SphereObject(Vector3(-0.5,0.0,-3.0), 0.5));
 	comp->add(new SphereObject(Vector3( 1.0,0.0,-2.2), 0.5));
 	comp->add(new PlaneObject (Vector3( 0.0,-0.5,0.0), Vector3( 0.0,1.0,0.0)));
+	*/
+
+	PLYMeshLoader ml("../../../../models/Armadillo.ply");
+	comp->add(new MeshObject(ml));
 
 	g_scene_object.reset(comp);
 }
 
 void renderScene(float *img, int w, int h, int nsubsamples)
 {
+	Bound bnd = g_scene_object->bound();
+	Vector3 target = bnd.max()-bnd.min();
+	std::cout << target << std::endl;
+
+
     int x, y;
     int u, v;
 
@@ -67,7 +81,7 @@ void renderScene(float *img, int w, int h, int nsubsamples)
                     float px = (x + (u / (float)nsubsamples) - (w / 2.0)) / (w / 2.0);
                     float py = -(y + (v / (float)nsubsamples) - (h / 2.0)) / (h / 2.0);
 
-					Vector3 dir = normalize(Vector3(px, py, -1));
+					Vector3 dir = normalize(target + Vector3(px, py, +1));
 
                     Ray ray(Vector3(0,0,0), dir);
 
