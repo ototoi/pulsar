@@ -226,7 +226,7 @@ namespace{
 #pragma pack(pop) 
         
         void get_minmax(Vector3& pmin, Vector3& pmax, PCFACE face){
-            static const float FAR = std::numeric_limits<float>::max()*1e-3f;
+            static const float FAR = std::numeric_limits<float>::max();
 
             Vector3 min = Vector3(+FAR, +FAR, +FAR);
             Vector3 max = Vector3(-FAR, -FAR, -FAR);
@@ -268,7 +268,7 @@ namespace{
         static
         void get_minmax(Vector3& pmin, Vector3& pmax, const PCFACE* faces, const size_t* indices, size_t a, size_t b)
         {
-            static const float FAR = std::numeric_limits<float>::max()*1e-3f;
+            static const float FAR = std::numeric_limits<float>::max();
             Vector3 min = Vector3(+FAR, +FAR, +FAR);
             Vector3 max = Vector3(-FAR, -FAR, -FAR);
             for(size_t i = a;i!=b;i++){
@@ -367,6 +367,19 @@ namespace{
 		}
 
 		static
+        inline void check_minmax(vector3f& min, vector3f& max)
+        {
+            static const float EPS = std::numeric_limits<float>::epsilon()*1024;
+
+            vector3f wid = (max-min)*0.5f;
+            vector3f cnt = (max+min)*0.5f;
+            for(int i = 0;i<3;i++){wid[i] = std::max<float>(wid[i],EPS);}
+
+            min = cnt-wid;
+            max = cnt+wid;
+        }
+
+		static
 		size_t construct_deep(
 			  std::vector<PCFACE>& out_faces,
 			  aligned_vector<SIMDBVHNode>& out_nodes,
@@ -395,6 +408,8 @@ namespace{
 
 				min -= Vector3(EPS,EPS,EPS);
 				max += Vector3(EPS,EPS,EPS);
+
+				check_minmax(min, max);
 	            
 				size_t nRet = MakeLeafIndex(first);
 				assert(IsLeaf(nRet));
@@ -681,6 +696,7 @@ namespace{
 		size_t sz = tris.size();
 		{
 			get_minmax(min_, max_, tris.begin(), tris.end());
+			check_minmax(min_, max_);
 		}
 
 		PCFACE* begin = &tris[0];
