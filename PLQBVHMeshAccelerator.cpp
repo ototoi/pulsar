@@ -367,12 +367,12 @@ namespace{
 		}
 
 		static
-        inline void check_minmax(vector3f& min, vector3f& max)
+        inline void check_minmax(Vector3& min, Vector3& max)
         {
             static const float EPS = std::numeric_limits<float>::epsilon()*1024;
 
-            vector3f wid = (max-min)*0.5f;
-            vector3f cnt = (max+min)*0.5f;
+            Vector3 wid = (max-min)*0.5f;
+            Vector3 cnt = (max+min)*0.5f;
             for(int i = 0;i<3;i++){wid[i] = std::max<float>(wid[i],EPS);}
 
             min = cnt-wid;

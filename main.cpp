@@ -10,6 +10,7 @@
 #include "PLYMeshLoader.h"
 #include "MeshObject.h"
 #include "Bound.h"
+#include "Camera.h"
 #include <memory>
 #include <iostream>
 
@@ -60,12 +61,23 @@ void initScene()
 	g_scene_object.reset(comp);
 }
 
+
+static
+float Radians( float x )
+{
+	static const float PI = 3.14159265358979323846f;
+	return x*PI/180.0f;
+}
+
 void renderScene(float *img, int w, int h, int nsubsamples)
 {
 	Bound bnd = g_scene_object->bound();
 	Vector3 target = bnd.max()-bnd.min();
 	std::cout << target << std::endl;
 
+	Vector3 from = Vector3(0,0,-200);
+
+	PerspectiveCamera camera(from, target, Vector3(0,1,0), Radians(45), float(w)/h);
 
     int x, y;
     int u, v;
@@ -81,9 +93,9 @@ void renderScene(float *img, int w, int h, int nsubsamples)
                     float px = (x + (u / (float)nsubsamples) - (w / 2.0)) / (w / 2.0);
                     float py = -(y + (v / (float)nsubsamples) - (h / 2.0)) / (h / 2.0);
 
-					Vector3 dir = normalize(target + Vector3(px, py, +1));
-
-                    Ray ray(Vector3(0,0,0), dir);
+					//Vector3 dir = normalize(target + Vector3(px, py, +1));
+                    //Ray ray(Vector3(0,0,0), dir);
+					Ray ray = camera.shoot(px, py);
 
 					Intersection info;
 
