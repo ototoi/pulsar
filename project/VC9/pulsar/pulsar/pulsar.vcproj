@@ -171,11 +171,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\..\Camera.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\CompositeObject.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Light.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Material.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\MaterializedObject.cpp"
 				>
 			</File>
 			<File
@@ -198,6 +214,10 @@
 				RelativePath="..\..\..\..\SphereObject.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\TransformMeshLoader.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
@@ -217,6 +237,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Camera.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\CompositeObject.h"
 				>
 			</File>
@@ -225,7 +249,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Light.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\MatealizedObject.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Material.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\MaterializedObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Matrix4.h"
 				>
 			</File>
 			<File
@@ -262,6 +302,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\SphereObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\TransformMeshLoader.h"
 				>
 			</File>
 			<File

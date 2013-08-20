@@ -13,14 +13,21 @@ namespace pulsar{
 		float D = B * B - C;
 		
 		if (D > 0.0) {
-			float t = -B - sqrt(D);
-	        
-			if ((t > tmin) && (t < tmax)) {
-				info->t = t;
-				info->position = r.org() + t*r.dir();
-				info->normal  = normalize(info->position-c_);
-				info->pObject = this;
-				return true;
+			float sqrtD = sqrt(D);
+			float ts[] =
+			{
+				-B - sqrtD,
+				-B + sqrtD
+			};
+			for(int i=0;i<2;i++){
+				float t = ts[i];
+				if ((t > tmin) && (t < tmax)) {
+					info->t = t;
+					info->position = r.org() + t*r.dir();
+					info->normal  = normalize(info->position-c_);
+					info->pObject = this;
+					return true;
+				}
 			}
 		}
 		return false;
