@@ -16,6 +16,8 @@
 #include "Light.h"
 #include "TransformMeshLoader.h"
 #include "PathTracer.h"
+#include "Timer.h"
+
 #include <memory>
 #include <iostream>
 #include <stdio.h>
@@ -45,7 +47,7 @@ void initScene()
 	//Sphere(1e5, Vec(50, 40.8, -1e5+250), Color(),      Color(),                 REFLECTION_TYPE_DIFFUSE), // Žè‘O
 	comp->add(new MaterializedObject(new SphereObject( Vector3(      50, 1e5, 81.6), 1e5), new LambertMaterial(Vector3(0.75, 0.75, 0.75))));// °
 	comp->add(new MaterializedObject(new SphereObject( Vector3(50, -1e5+81.6, 81.6), 1e5), new LambertMaterial(Vector3(0.75, 0.75, 0.75))));// “Vˆä
-	comp->add(new MaterializedObject(new SphereObject( Vector3(65, 20, 20), 20), new LambertMaterial(Vector3(0.25, 0.75, 0.25))));// —Î‹…
+	//comp->add(new MaterializedObject(new SphereObject( Vector3(65, 20, 20), 20), new LambertMaterial(Vector3(0.25, 0.75, 0.25))));// —Î‹…
 	comp->add(new MaterializedObject(new SphereObject( Vector3(27, 16.5, 47), 16.5), new MirrorMaterial(Vector3(0.99, 0.99, 0.99))));// ‹¾
 	comp->add(new MaterializedObject(new SphereObject( Vector3(77, 16.5, 78), 16.5), new GlassMaterial(Vector3(0.99, 0.99, 0.99))));//ƒKƒ‰ƒX
 	comp->add(new MaterializedObject(new SphereObject( Vector3(50.0, 90.0, 81.6), 15.0), new EmissionMaterial(Vector3(36,36,36))));// Æ–¾
@@ -53,7 +55,7 @@ void initScene()
 	float f = 0.75;
 	Matrix4 mat = Matrix4::Traslation(50.0, 0, 20)*Matrix4::RotationY(Radians(180.0))*Matrix4::Scaling(f,f,f);
 	TransformMeshLoader ml(new PLYMeshLoader("../../../../models/Armadillo.ply"), mat);
-	comp->add(new MaterializedObject(new MeshObject(ml), new LambertMaterial(Vector3(1,0.1,0.1))));
+	comp->add(new MaterializedObject(new MeshObject(ml), new LambertMaterial(Vector3(0.1,0.7,0.1))));
 
 	g_scene_object.reset(comp);
 
@@ -76,7 +78,7 @@ void averageImagefile(float oo[], const float aa[], const float bb[], float alph
 	int total = width*height*3;
 	for(int i=0;i<total;i++)
 	{
-		oo[i] = (aa[i]+bb[i])*alpha;
+		oo[i] = (alpha*aa[i]+(1.0f-alpha)*bb[i]);
 	}
 }
 
@@ -103,11 +105,19 @@ void renderScene(const char* szFilename, int w, int h, int nsubsamples, int iter
 
 	int total_pixel = w*h;
 
+	Timer t;
+	t.start();
+
+	Timer tx;
+	tx.start();
+
+	int num_P =1;
 	for(int nFrame = 0;nFrame<iter;nFrame++){
 		std::vector<float> crntImage(w*h*3);
 		memset(&crntImage[0], 0 , sizeof(float)*w*h*3);
 
 		int prog = 0;
+		//#pragma omp parallel for
 		for (y = 0; y < h; y++) {
 			for (x = 0; x < w; x++) {
 	            
@@ -138,20 +148,45 @@ void renderScene(const char* szFilename, int w, int h, int nsubsamples, int iter
 				prog++;
 			}
 			printf("%d:line:%d/%d\n",nFrame+1, y,h);
+			
 		}
 
+		//printf("%d:line:%d/%d\n",nFrame+1, y,h);
 
+
+		std::vector<float> outImage(w*h*3);
 		if(nFrame==0)
 		{
-			std::vector<float> outImage(w*h*3);
 			outImage = crntImage;
-			saveImagefile("result", nFrame+1, &outImage[0], w, h);
+			saveImagefile(szFilename, nFrame+1, &outImage[0], w, h);
 		}else{
-			std::vector<float> outImage(w*h*3);
 			float alpha = float(nFrame)/(nFrame+1);//1:0.5, 2
 			averageImagefile(&outImage[0], &prevImage[0], &crntImage[0], alpha, w, h);
-			saveImagefile("result", nFrame+1, &outImage[0], w, h);
+			saveImagefile(szFilename, nFrame+1, &outImage[0], w, h);
 			prevImage.swap(outImage);
+		}
+
+		{
+			tx.end();
+			Timer::time_t tt = tx.sec();
+			if(tt>60){
+				{
+					std::string str = szFilename;
+					str += "_at_";
+					saveImagefile(str.c_str(), num_P, &outImage[0], w, h);
+				}
+
+				num_P++;
+				tx.start();
+			}else{
+				;//
+			}
+		}
+
+		t.end();
+		Timer::time_t tt = t.sec();
+		if(tt>60*60){
+			break;
 		}
 	}
 }
@@ -162,8 +197,8 @@ int main(int argc, char** argv)
 {
 	int width = 640;
 	int height = 480;
-	int samples = 4;
-	int iter = 20;
+	int samples = 2;
+	int iter = 1000;
 
 	std::string strFilename = "result";
 

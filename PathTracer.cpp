@@ -16,7 +16,7 @@ namespace pulsar{
 
 	bool PathTracer::intersect_scene(Intersection *info, const Ray &ray)const
 	{
-		if(pObj_->intersect(info, ray, 0.01f, 100000.0f))
+		if(pObj_->intersect(info, ray, 0.1f, 100000.0f))
 		{
 			info->ray_origin = ray.org();
 			info->ray_direction = ray.dir();
