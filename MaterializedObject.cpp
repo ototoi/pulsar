@@ -16,7 +16,9 @@ namespace pulsar{
 	{
 		if(pObj_->intersect(info, r, tmin, tmax))
 		{
-			info->pMaterial = pMat_;
+			if(pMat_){
+					info->pMaterial = pMat_;
+			}
 			return true;
 		}
 		return false;

@@ -199,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\PathTracer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\PlaneObject.cpp"
 				>
 			</File>
@@ -208,6 +212,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\PLYMeshLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Random.cpp"
 				>
 			</File>
 			<File

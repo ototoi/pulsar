@@ -15,8 +15,11 @@
 #include "Camera.h"
 #include "Light.h"
 #include "TransformMeshLoader.h"
+#include "PathTracer.h"
 #include <memory>
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
 
 using namespace pulsar;
 
@@ -37,14 +40,14 @@ void initScene()
 	comp->add(new MaterializedObject(new SphereObject( Vector3( 1e5+1,  40.8, 81.6), 1e5), new LambertMaterial(Vector3(0.75, 0.25, 0.25))));//ç∂
 	comp->add(new MaterializedObject(new SphereObject( Vector3(-1e5+99, 40.8, 81.6), 1e5), new LambertMaterial(Vector3(0.25, 0.25, 0.75))));//âE
 	comp->add(new MaterializedObject(new SphereObject( Vector3(    50,  40.8,  1e5), 1e5), new LambertMaterial(Vector3(0.75, 0.75, 0.75))));//âú
+	comp->add(new MaterializedObject(new SphereObject( Vector3( 50, 40.8, -1e5+250), 1e5), new LambertMaterial(Vector3(0.0, 0.0, 0.0))));//âú
+	
 	//Sphere(1e5, Vec(50, 40.8, -1e5+250), Color(),      Color(),                 REFLECTION_TYPE_DIFFUSE), // éËëO
 	comp->add(new MaterializedObject(new SphereObject( Vector3(      50, 1e5, 81.6), 1e5), new LambertMaterial(Vector3(0.75, 0.75, 0.75))));// è∞
 	comp->add(new MaterializedObject(new SphereObject( Vector3(50, -1e5+81.6, 81.6), 1e5), new LambertMaterial(Vector3(0.75, 0.75, 0.75))));// ìVà‰
 	comp->add(new MaterializedObject(new SphereObject( Vector3(65, 20, 20), 20), new LambertMaterial(Vector3(0.25, 0.75, 0.25))));// óŒãÖ
-	//Sphere(16.5,Vec(27, 16.5, 47),       Color(),      Color(0.99, 0.99, 0.99), REFLECTION_TYPE_SPECULAR), // ãæ
-	//Sphere(16.5,Vec(77, 16.5, 78),       Color(),      Color(0.99, 0.99, 0.99), REFLECTION_TYPE_REFRACTION), //ÉKÉâÉX
-	comp->add(new MaterializedObject(new SphereObject( Vector3(27, 16.5, 47), 16.5), new LambertMaterial(Vector3(0.99, 0.99, 0.99))));// ãæ
-	comp->add(new MaterializedObject(new SphereObject( Vector3(77, 16.5, 78), 16.5), new LambertMaterial(Vector3(0.99, 0.99, 0.99))));//ÉKÉâÉX
+	comp->add(new MaterializedObject(new SphereObject( Vector3(27, 16.5, 47), 16.5), new MirrorMaterial(Vector3(0.99, 0.99, 0.99))));// ãæ
+	comp->add(new MaterializedObject(new SphereObject( Vector3(77, 16.5, 78), 16.5), new GlassMaterial(Vector3(0.99, 0.99, 0.99))));//ÉKÉâÉX
 	comp->add(new MaterializedObject(new SphereObject( Vector3(50.0, 90.0, 81.6), 15.0), new EmissionMaterial(Vector3(36,36,36))));// è∆ñæ
 
 	float f = 0.75;
@@ -59,10 +62,27 @@ void initScene()
 	g_light_object.reset(new PointLight(Vector3(1,1,1),Vector3(50.0, 90.0,81.6)));
 }
 
+static
+void saveImagefile(const char* szFile, int nFrame, const float buffer[], int width, int height)
+{
+	char sname[256];
+	sprintf(sname, "%s_%04d.ppm", szFile,nFrame);
+	save_ppm_file(sname, buffer, width, height);
+}
+
+static
+void averageImagefile(float oo[], const float aa[], const float bb[], float alpha, int width, int height)
+{
+	int total = width*height*3;
+	for(int i=0;i<total;i++)
+	{
+		oo[i] = (aa[i]+bb[i])*alpha;
+	}
+}
 
 
 
-void renderScene(float *img, int w, int h, int nsubsamples)
+void renderScene(const char* szFilename, int w, int h, int nsubsamples, int iter)
 {
 	Vector3 from = Vector3(50.0, 52.0, 220.0);
 	Vector3 to   = from + 1000*normalize(Vector3(0.0, -0.04, -1.0));
@@ -70,64 +90,116 @@ void renderScene(float *img, int w, int h, int nsubsamples)
 
 	PerspectiveCamera camera(from, to, upper, Radians(45), float(w)/h);
 
+	PathTracer pt(g_scene_object.get());
+	Random rnd(123456);
+
     int x, y;
     int u, v;
 
-    float *fimg = (float *)malloc(sizeof(float) * w * h * 3);
-    memset((void *)fimg, 0, sizeof(float) * w * h * 3);
+	std::vector<float> prevImage(w*h*3);
+	
+	//std::vector<const Light*> lights;
+	//lights.push_back(g_light_object.get());
 
-	std::vector<const Light*> lights;
-	lights.push_back(g_light_object.get());
+	int total_pixel = w*h;
 
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            
-            for (v = 0; v < nsubsamples; v++) {
-				float vv = (v+1)/float(nsubsamples+1);
-                for (u = 0; u < nsubsamples; u++) {
-					float uu = (u+1)/float(nsubsamples+1);
-					float px01 = (x+uu)/float(w);
-					float py01 = (h-(y+vv))/float(h);
-                    float px = 2.0f*px01-1.0f;
-                    float py = 2.0f*py01-1.0f;
+	for(int nFrame = 0;nFrame<iter;nFrame++){
+		std::vector<float> crntImage(w*h*3);
+		memset(&crntImage[0], 0 , sizeof(float)*w*h*3);
 
-					Ray ray = camera.shoot(px, py);
+		int prog = 0;
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x++) {
+	            
+				for (v = 0; v < nsubsamples; v++) {
+					float vv = (v+1)/float(nsubsamples+1);
+					for (u = 0; u < nsubsamples; u++) {
+						float uu = (u+1)/float(nsubsamples+1);
+						float px01 = (x+uu)/float(w);
+						float py01 = (h-(y+vv))/float(h);
+						float px = 2.0f*px01-1.0f;
+						float py = 2.0f*py01-1.0f;
 
-					Intersection info;
+						Ray ray = camera.shoot(px, py);
 
-					if(g_scene_object->intersect(&info, ray, 0, 100000000))
-					{
-						info.ray_origin = ray.org();
-						info.ray_direction = ray.dir();
-						Vector3 col = info.pMaterial->shade(info, lights);
-						fimg[3 * (y * w + x) + 0] += col[0];
-                        fimg[3 * (y * w + x) + 1] += col[1];
-                        fimg[3 * (y * w + x) + 2] += col[2];
+						{
+							Vector3 col = pt.radiance(ray, rnd, 0);
+							crntImage[3 * (y * w + x) + 0] += col[0];
+							crntImage[3 * (y * w + x) + 1] += col[1];
+							crntImage[3 * (y * w + x) + 2] += col[2];
+						}
 					}
 				}
-			}
 
-			fimg[3 * (y * w + x) + 0] /= (float)(nsubsamples * nsubsamples);
-            fimg[3 * (y * w + x) + 1] /= (float)(nsubsamples * nsubsamples);
-            fimg[3 * (y * w + x) + 2] /= (float)(nsubsamples * nsubsamples);
+				crntImage[3 * (y * w + x) + 0] /= (float)(nsubsamples * nsubsamples);
+				crntImage[3 * (y * w + x) + 1] /= (float)(nsubsamples * nsubsamples);
+				crntImage[3 * (y * w + x) + 2] /= (float)(nsubsamples * nsubsamples);
+
+				prog++;
+			}
+			printf("%d:line:%d/%d\n",nFrame+1, y,h);
+		}
+
+
+		if(nFrame==0)
+		{
+			std::vector<float> outImage(w*h*3);
+			outImage = crntImage;
+			saveImagefile("result", nFrame+1, &outImage[0], w, h);
+		}else{
+			std::vector<float> outImage(w*h*3);
+			float alpha = float(nFrame)/(nFrame+1);//1:0.5, 2
+			averageImagefile(&outImage[0], &prevImage[0], &crntImage[0], alpha, w, h);
+			saveImagefile("result", nFrame+1, &outImage[0], w, h);
+			prevImage.swap(outImage);
 		}
 	}
-
-	memcpy(img, fimg, sizeof(float)*3*w*h);
-
-	free(fimg);
 }
 
 
 
-int main()
+int main(int argc, char** argv)
 {
 	int width = 640;
 	int height = 480;
-	std::vector<float> buffer(width*height*3);
+	int samples = 4;
+	int iter = 20;
+
+	std::string strFilename = "result";
+
+	if(argc < 2){
+		printf("pulsar [filename] [width] [height] [samples] [iteration]\n");
+	}
+
+	if(argc>=2)
+	{
+		strFilename = argv[1];
+	}
+
+	if(argc>=3)
+	{
+		width = atoi(argv[2]);
+	}
+
+	if(argc>=4)
+	{
+		height = atoi(argv[3]);
+	}
+
+	if(argc>=5)
+	{
+		samples = atoi(argv[4]);
+	}
+
+	if(argc>=6)
+	{
+		iter = atoi(argv[5]);
+	}
+
+
+
 	initScene();
-	renderScene(&buffer[0], width, height, 2);
-	save_ppm_file("test.ppm", &buffer[0], width, height);
+	renderScene(strFilename.c_str(), width, height, samples, iter);
 	
 	return  0;
 }
