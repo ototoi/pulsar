@@ -54,7 +54,7 @@ void initScene()
 
 	float f = 0.75;
 	Matrix4 mat = Matrix4::Traslation(50.0, 0, 20)*Matrix4::RotationY(Radians(180.0))*Matrix4::Scaling(f,f,f);
-	TransformMeshLoader ml(new PLYMeshLoader("../../../../models/Armadillo.ply"), mat);
+	TransformMeshLoader ml(new PLYMeshLoader("../models/Armadillo.ply"), mat);
 	comp->add(new MaterializedObject(new MeshObject(ml), new LambertMaterial(Vector3(0.1,0.7,0.1))));
 
 	g_scene_object.reset(comp);
